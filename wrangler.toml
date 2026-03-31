@@ -1,0 +1,46 @@
+name = "mobdeals-storefront"
+main = ".open-next/worker.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Assets binding for static files
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+# KV namespace for webhook replay protection
+[[kv_namespaces]]
+binding = "WEBHOOK_REPLAY_KV"
+id = "mobdeals_webhook_replay_kv"
+
+[[kv_namespaces]]
+binding = "MOBDEALS_CART_KV"
+id = "mobdeals_cart_kv"
+
+# Environment variables (non-sensitive)
+[vars]
+SITE_URL = "https://mobdeals.co.ke"
+ALT_SITE_URL = "https://shop.mobdeals.co.ke"
+WP_BASE_URL = "https://origin.mobdeals.co.ke"
+WP_JSON_BASE = "https://origin.mobdeals.co.ke/wp-json"
+
+# Secrets (set via wrangler secret put or dashboard)
+# WC_CONSUMER_KEY = ""
+# WC_CONSUMER_SECRET = ""
+# WC_WEBHOOK_SECRET = ""
+
+# Routes - bind to shop.mobdeals.co.ke
+[[routes]]
+pattern = "shop.mobdeals.co.ke/*"
+zone_name = "mobdeals.co.ke"
+
+# Redirect rules for root domains (configured in Cloudflare Dashboard)
+# mobdeals.co.ke/* -> https://shop.mobdeals.co.ke/$1 (301)
+# www.mobdeals.co.ke/* -> https://shop.mobdeals.co.ke/$1 (301)
+
+[build]
+command = "npm run cf:build"
+
+# Development settings
+[dev]
+port = 8787
