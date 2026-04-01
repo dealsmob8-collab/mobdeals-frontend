@@ -1,13 +1,44 @@
-import createDOMPurify from 'dompurify'
-import { JSDOM } from 'jsdom'
+import sanitizeHtmlLib from 'sanitize-html'
 import { WooCommerceProduct, WooCommerceCategory, ProductSearchResult } from '@/types/woocommerce'
 
 const WP_JSON_BASE = process.env.WP_JSON_BASE || 'https://origin.mobdeals.co.ke/wp-json'
 const WC_CONSUMER_KEY = process.env.WC_CONSUMER_KEY || ''
 const WC_CONSUMER_SECRET = process.env.WC_CONSUMER_SECRET || ''
-const DOMPurify = createDOMPurify(
-  new JSDOM('').window as unknown as Parameters<typeof createDOMPurify>[0]
-)
+const SANITIZE_HTML_OPTIONS: sanitizeHtmlLib.IOptions = {
+  allowedTags: [
+    'p',
+    'br',
+    'strong',
+    'em',
+    'b',
+    'i',
+    'u',
+    'ul',
+    'ol',
+    'li',
+    'a',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'blockquote',
+    'table',
+    'thead',
+    'tbody',
+    'tr',
+    'th',
+    'td',
+  ],
+  allowedAttributes: {
+    a: ['href', 'target', 'rel'],
+    th: ['colspan', 'rowspan'],
+    td: ['colspan', 'rowspan'],
+  },
+  allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+  allowProtocolRelative: false,
+  parseStyleAttributes: false,
+}
 
 function buildAuthParams(): string {
   if (!WC_CONSUMER_KEY || !WC_CONSUMER_SECRET) {
@@ -152,9 +183,7 @@ export async function searchProducts(
 }
 
 export function sanitizeHtml(html: string): string {
-  return DOMPurify.sanitize(html, {
-    USE_PROFILES: { html: true },
-  })
+  return sanitizeHtmlLib(html, SANITIZE_HTML_OPTIONS)
 }
 
 export function validateProductData(product: WooCommerceProduct): {
