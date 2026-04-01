@@ -1,9 +1,13 @@
+import createDOMPurify from 'dompurify'
+import { JSDOM } from 'jsdom'
 import { WooCommerceProduct, WooCommerceCategory, ProductSearchResult } from '@/types/woocommerce'
 
-const WP_BASE_URL = process.env.WP_BASE_URL || 'https://origin.mobdeals.co.ke'
 const WP_JSON_BASE = process.env.WP_JSON_BASE || 'https://origin.mobdeals.co.ke/wp-json'
 const WC_CONSUMER_KEY = process.env.WC_CONSUMER_KEY || ''
 const WC_CONSUMER_SECRET = process.env.WC_CONSUMER_SECRET || ''
+const DOMPurify = createDOMPurify(
+  new JSDOM('').window as unknown as Parameters<typeof createDOMPurify>[0]
+)
 
 function buildAuthParams(): string {
   if (!WC_CONSUMER_KEY || !WC_CONSUMER_SECRET) {
@@ -148,10 +152,9 @@ export async function searchProducts(
 }
 
 export function sanitizeHtml(html: string): string {
-  // Basic HTML sanitization - in production, use DOMPurify
-  return html
-    .replace(/<script[^>]*>.*?<\/script>/gi, '')
-    .replace(/on\w+\s*=/gi, 'data-blocked=')
+  return DOMPurify.sanitize(html, {
+    USE_PROFILES: { html: true },
+  })
 }
 
 export function validateProductData(product: WooCommerceProduct): {

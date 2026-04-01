@@ -4,8 +4,13 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getProductBySlug, getProducts, sanitizeHtml } from '@/lib/woocommerce'
 import { formatPrice, cn } from '@/lib/utils'
+import { AddToCartButton } from '@/components/add-to-cart-button'
 import { ProductCard } from '@/components/product-card'
-import { ShoppingCart, Truck, Shield, Check, Star } from 'lucide-react'
+import { WooCommerceProduct } from '@/types/woocommerce'
+import { Truck, Shield, Check, Star } from 'lucide-react'
+
+export const revalidate = 60
+export const dynamicParams = true
 
 interface ProductPageProps {
   params: {
@@ -14,34 +19,40 @@ interface ProductPageProps {
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const product = await getProductBySlug(params.slug)
-  
-  if (!product) {
+  try {
+    const product = await getProductBySlug(params.slug)
+
+    if (!product) {
+      return {
+        title: 'Product Not Found | MobDeals',
+      }
+    }
+
     return {
-      title: 'Product Not Found | MobDeals',
+      title: `${product.name} | MobDeals Kenya`,
+      description: product.short_description || product.description.slice(0, 160),
+      openGraph: {
+        title: product.name,
+        description: product.short_description || '',
+        images: product.images?.[0] ? [{ url: product.images[0].src }] : [],
+      },
+    }
+  } catch (error) {
+    console.error('Product metadata error:', error)
+    return {
+      title: 'MobDeals Product | MobDeals Kenya',
     }
   }
-
-  return {
-    title: `${product.name} | MobDeals Kenya`,
-    description: product.short_description || product.description.slice(0, 160),
-    openGraph: {
-      title: product.name,
-      description: product.short_description || '',
-      images: product.images?.[0] ? [{ url: product.images[0].src }] : [],
-    },
-  }
-}
-
-export async function generateStaticParams() {
-  const { products } = await getProducts(undefined, 1, 20)
-  return products.map((product) => ({
-    slug: product.slug,
-  }))
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const product = await getProductBySlug(params.slug)
+  let product: WooCommerceProduct | null = null
+
+  try {
+    product = await getProductBySlug(params.slug)
+  } catch (error) {
+    console.error('Product page data error:', error)
+  }
   
   if (!product) {
     notFound()
@@ -52,12 +63,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const isOnSale = product.on_sale && regularPrice > price
 
   // Get related products
-  const { products: relatedProducts } = await getProducts(
-    product.categories?.[0]?.id?.toString(),
-    1,
-    4,
-    'popularity'
-  )
+  let relatedProducts: WooCommerceProduct[] = []
+
+  try {
+    const relatedResult = await getProducts(
+      product.categories?.[0]?.id?.toString(),
+      1,
+      4,
+      'popularity'
+    )
+    relatedProducts = relatedResult.products
+  } catch (error) {
+    console.error('Related products error:', error)
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -196,15 +214,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           {/* Add to Cart */}
           <div className="flex gap-4">
-            <button
-              className="flex-1 rounded-full bg-mobdeals-red px-8 py-4 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            <AddToCartButton
+              productId={product.id}
               disabled={product.stock_status !== 'instock'}
-            >
-              <span className="flex items-center justify-center gap-2">
-                <ShoppingCart className="h-5 w-5" />
-                Add to Cart
-              </span>
-            </button>
+              variant="full"
+            />
           </div>
 
           {/* Trust Badges */}

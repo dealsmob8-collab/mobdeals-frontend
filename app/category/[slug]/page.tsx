@@ -1,96 +1,96 @@
-import { Metadata } from 'next'
 import Link from 'next/link'
-import { getProducts, getCategories } from '@/lib/woocommerce'
-import { ProductCard } from '@/components/product-card'
+import { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import { Pagination } from '@/components/pagination'
+import { ProductCard } from '@/components/product-card'
 import { SortSelect } from '@/components/sort-select'
+import { getCategories, getProducts } from '@/lib/woocommerce'
 import { WooCommerceCategory, WooCommerceProduct } from '@/types/woocommerce'
 
-export const metadata: Metadata = {
-  title: 'All Products | MobDeals Kenya',
-  description: 'Browse our complete collection of smartphones, laptops, and tech accessories. 2-hour delivery in Nairobi, M-PESA payments.',
-}
 export const revalidate = 60
 
-interface ProductsPageProps {
+interface CategoryPageProps {
+  params: {
+    slug: string
+  }
   searchParams: {
     page?: string
-    category?: string
     sort?: string
   }
 }
 
-export default async function ProductsPage({ searchParams }: ProductsPageProps) {
+export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
+  return {
+    title: `${params.slug} | MobDeals Kenya`,
+  }
+}
+
+export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
   const page = parseInt(searchParams.page || '1')
-  const category = searchParams.category
   const sort = searchParams.sort || 'date'
+
+  let categories: WooCommerceCategory[] = []
+  let category: WooCommerceCategory | null = null
   let products: WooCommerceProduct[] = []
   let total = 0
   let totalPages = 0
-  let categories: WooCommerceCategory[] = []
   let dataUnavailable = false
 
   try {
-    const [productResult, fetchedCategories] = await Promise.all([
-      getProducts(category, page, 12, sort),
-      getCategories(),
-    ])
+    categories = await getCategories()
+    category = categories.find((entry) => entry.slug === params.slug) || null
 
+    if (!category) {
+      notFound()
+    }
+
+    const productResult = await getProducts(String(category.id), page, 12, sort)
     products = productResult.products
     total = productResult.total
     totalPages = productResult.total_pages
-    categories = fetchedCategories
   } catch (error) {
-    console.error('Products page data error:', error)
+    console.error('Category page data error:', error)
     dataUnavailable = true
   }
 
+  if (!category && !dataUnavailable) {
+    notFound()
+  }
+
   const paginationParams = new URLSearchParams()
-  if (category) paginationParams.set('category', category)
   if (sort !== 'date') paginationParams.set('sort', sort)
   const paginationBase = paginationParams.toString()
-    ? `/products?${paginationParams.toString()}`
-    : '/products'
-  
+    ? `/category/${params.slug}?${paginationParams.toString()}`
+    : `/category/${params.slug}`
+
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Breadcrumb */}
       <nav className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/" className="hover:text-mobdeals-red">Home</Link>
         <span>/</span>
-        <span className="text-foreground">Products</span>
+        <Link href="/categories" className="hover:text-mobdeals-red">Categories</Link>
+        <span>/</span>
+        <span className="text-foreground">{category?.name || 'Category'}</span>
       </nav>
 
       <div className="grid gap-8 lg:grid-cols-4">
-        {/* Sidebar */}
         <aside className="space-y-6">
-          {/* Categories */}
           <div className="rounded-2xl border border-border bg-card p-4">
             <h3 className="mb-4 font-semibold">Categories</h3>
             <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/products"
-                  className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
-                    !category ? 'bg-mobdeals-red/10 text-mobdeals-red' : 'hover:bg-secondary'
-                  }`}
-                >
-                  All Products
-                </Link>
-              </li>
-              {categories.map((cat) => (
-                <li key={cat.id}>
+              {categories.map((entry) => (
+                <li key={entry.id}>
                   <Link
-                    href={`/products?category=${cat.id}`}
+                    href={`/category/${entry.slug}`}
                     className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
-                      category === String(cat.id)
+                      entry.slug === params.slug
                         ? 'bg-mobdeals-red/10 text-mobdeals-red'
                         : 'hover:bg-secondary'
                     }`}
                   >
-                    {cat.name}
+                    {entry.name}
                     <span className="ml-2 text-xs text-muted-foreground">
-                      ({cat.count})
+                      ({entry.count})
                     </span>
                   </Link>
                 </li>
@@ -98,32 +98,25 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             </ul>
           </div>
 
-          {/* Sort */}
           <div className="rounded-2xl border border-border bg-card p-4">
             <h3 className="mb-4 font-semibold">Sort By</h3>
             <SortSelect value={sort} />
           </div>
         </aside>
 
-        {/* Products Grid */}
         <div className="lg:col-span-3">
           <div className="mb-6 flex items-center justify-between">
-            <h1 className="text-2xl font-bold">
-              {category
-                ? categories.find((c) => String(c.id) === category)?.name || 'Products'
-                : 'All Products'}
-            </h1>
-            <span className="text-sm text-muted-foreground">
-              Showing {products.length} of {total} products
-            </span>
+            <div>
+              <h1 className="text-2xl font-bold">{category?.name || 'Category'}</h1>
+              <p className="text-sm text-muted-foreground">
+                Showing {products.length} of {total} products
+              </p>
+            </div>
           </div>
 
           {dataUnavailable ? (
-            <div className="rounded-2xl border border-border bg-card p-12 text-center">
-              <p className="text-muted-foreground">
-                Product data is temporarily unavailable. Please try again shortly
-                or order through WhatsApp.
-              </p>
+            <div className="rounded-2xl border border-border bg-card p-12 text-center text-muted-foreground">
+              Category data is temporarily unavailable.
             </div>
           ) : products.length > 0 ? (
             <>
@@ -144,14 +137,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               )}
             </>
           ) : (
-            <div className="rounded-2xl border border-border bg-card p-12 text-center">
-              <p className="text-muted-foreground">No products found.</p>
-              <Link
-                href="/products"
-                className="mt-4 inline-block text-mobdeals-red hover:underline"
-              >
-                View all products
-              </Link>
+            <div className="rounded-2xl border border-border bg-card p-12 text-center text-muted-foreground">
+              No products found in this category yet.
             </div>
           )}
         </div>

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { ShoppingCart } from 'lucide-react'
+import { AddToCartButton } from '@/components/add-to-cart-button'
 import { cn, formatPrice } from '@/lib/utils'
 import { WooCommerceProduct } from '@/types/woocommerce'
 
@@ -108,13 +108,11 @@ export function ProductCard({ product, className }: ProductCardProps) {
           </div>
 
           {/* Add to cart button */}
-          <button
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-mobdeals-red text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+          <AddToCartButton
+            productId={product.id}
             disabled={product.stock_status === 'outofstock'}
-            aria-label="Add to cart"
-          >
-            <ShoppingCart className="h-4 w-4" />
-          </button>
+            variant="icon"
+          />
         </div>
       </div>
     </div>

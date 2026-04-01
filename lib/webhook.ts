@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from 'crypto'
+import { createHash, createHmac, timingSafeEqual } from 'crypto'
 import { WebhookPayload } from '@/types/woocommerce'
 
 const WC_WEBHOOK_SECRET = process.env.WC_WEBHOOK_SECRET || ''
@@ -46,10 +46,12 @@ export function verifyWebhookSignature(
   }
 }
 
-export function getWebhookIdempotencyKey(payload: WebhookPayload): string {
-  // Create a unique key based on webhook ID and timestamp
-  const timestamp = new Date().toISOString().slice(0, 16) // Round to minute
-  return `webhook:${payload.id}:${timestamp}`
+export function getWebhookIdempotencyKey(rawBody: string, topic: string): string {
+  const hash = createHash('sha256')
+    .update(`${topic}:${rawBody}`, 'utf8')
+    .digest('hex')
+
+  return `webhook:${topic}:${hash}`
 }
 
 export async function checkReplayProtection(
@@ -81,25 +83,27 @@ export function parseWebhookPayload(body: string): WebhookPayload | null {
   }
 }
 
-export function getCacheInvalidationKeys(payload: WebhookPayload): string[] {
-  const keys: string[] = []
-  
-  // Invalidate product list cache
-  keys.push('products:')
-  
-  // Invalidate specific product cache if ID is present
-  if (payload.id) {
-    keys.push(`product:${payload.id}`)
-  }
-  
-  // Invalidate category caches if order contains line items
-  if (payload.line_items && payload.line_items.length > 0) {
-    for (const item of payload.line_items) {
-      if (item.product_id) {
-        keys.push(`product:${item.product_id}`)
-      }
+export function getCacheInvalidationPaths(
+  payload: WebhookPayload,
+  topic: string
+): string[] {
+  const paths = new Set<string>([
+    '/api/products',
+    '/api/categories',
+    '/products',
+    '/categories',
+  ])
+
+  if (topic.startsWith('product')) {
+    if (payload.slug) {
+      paths.add(`/api/products/${payload.slug}`)
+      paths.add(`/products/${payload.slug}`)
+    }
+
+    for (const category of payload.categories || []) {
+      paths.add(`/category/${category.slug}`)
     }
   }
-  
-  return keys
+
+  return Array.from(paths)
 }

@@ -4,7 +4,7 @@ import {
   parseWebhookPayload,
   getWebhookIdempotencyKey,
   checkReplayProtection,
-  getCacheInvalidationKeys,
+  getCacheInvalidationPaths,
 } from '@/lib/webhook'
 import { addCacheHeaders } from '@/lib/cache'
 
@@ -42,8 +42,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return addCacheHeaders(response, 'BYPASS', 'webhook-invalid-payload')
     }
 
+    // Get webhook topic
+    const topic = request.headers.get('x-wc-webhook-topic') || 'unknown'
+
     // Check replay protection
-    const idempotencyKey = getWebhookIdempotencyKey(payload)
+    const idempotencyKey = getWebhookIdempotencyKey(rawBody, topic)
     const isReplay = await checkReplayProtection(idempotencyKey, WEBHOOK_REPLAY_KV)
     if (isReplay) {
       console.warn('Duplicate webhook detected:', idempotencyKey)
@@ -54,8 +57,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return addCacheHeaders(response, 'BYPASS', 'webhook-replay')
     }
 
-    // Get webhook topic
-    const topic = request.headers.get('x-wc-webhook-topic') || 'unknown'
     console.log('Processing webhook:', topic, 'for order/product:', payload.id)
 
     // Handle different webhook topics
@@ -76,9 +77,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         console.log('Unhandled webhook topic:', topic)
     }
 
-    // Invalidate relevant cache keys
-    const cacheKeys = getCacheInvalidationKeys(payload)
-    await invalidateCacheKeys(cacheKeys)
+    const cachePaths = getCacheInvalidationPaths(payload, topic)
+    await invalidateCachePaths(cachePaths, request.nextUrl.origin)
 
     const response = NextResponse.json(
       { message: 'Webhook processed successfully' },
@@ -110,17 +110,16 @@ async function handleProductWebhook(payload: unknown): Promise<void> {
   // e.g., update search index, clear product cache, etc.
 }
 
-async function invalidateCacheKeys(keys: string[]): Promise<void> {
-  // Invalidate cache keys in Cloudflare
+async function invalidateCachePaths(paths: string[], origin: string): Promise<void> {
   const cache = (caches as any).default
 
-  for (const key of keys) {
+  for (const path of paths) {
     try {
-      // Delete from cache
-      await cache.delete(key)
-      console.log('Invalidated cache key:', key)
+      const cacheUrl = new URL(path, origin).toString()
+      await cache.delete(cacheUrl)
+      console.log('Invalidated cache path:', cacheUrl)
     } catch (error) {
-      console.error('Failed to invalidate cache key:', key, error)
+      console.error('Failed to invalidate cache path:', path, error)
     }
   }
 }

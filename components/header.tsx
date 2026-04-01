@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Search, ShoppingCart, Menu, X, Phone } from 'lucide-react'
+import { Search, Menu, X, Phone } from 'lucide-react'
+import { CartIndicator } from '@/components/cart-indicator'
 import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
@@ -15,7 +16,6 @@ const NAV_ITEMS = [
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [cartCount] = useState(0)
 
   return (
     <header className="sticky top-8 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -65,18 +65,7 @@ export function Header() {
               <span>Order on WhatsApp</span>
             </a>
 
-            {/* Cart */}
-            <Link
-              href="/cart"
-              className="relative flex items-center gap-2 rounded-full border border-border px-3 py-2 transition-colors hover:border-mobdeals-red"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              {cartCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-mobdeals-red text-xs font-bold text-white">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
+            <CartIndicator />
 
             {/* Mobile Menu Button */}
             <button

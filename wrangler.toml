@@ -11,11 +11,11 @@ binding = "ASSETS"
 # KV namespace for webhook replay protection
 [[kv_namespaces]]
 binding = "WEBHOOK_REPLAY_KV"
-id = "mobdeals_webhook_replay_kv"
+id = "27f1def42eff4279942272bc35d823b3"
 
 [[kv_namespaces]]
 binding = "MOBDEALS_CART_KV"
-id = "mobdeals_cart_kv"
+id = "0e4729a0ee454be091d749e7ac91bb52"
 
 # Environment variables (non-sensitive)
 [vars]

@@ -4,11 +4,13 @@ import { searchProducts } from '@/lib/woocommerce'
 import { ProductCard } from '@/components/product-card'
 import { Pagination } from '@/components/pagination'
 import { Search } from 'lucide-react'
+import { WooCommerceProduct } from '@/types/woocommerce'
 
 export const metadata: Metadata = {
   title: 'Search | MobDeals Kenya',
   description: 'Search for smartphones, laptops, and tech accessories at MobDeals Kenya.',
 }
+export const revalidate = 60
 
 interface SearchPageProps {
   searchParams: {
@@ -21,15 +23,21 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const query = searchParams.q || ''
   const page = parseInt(searchParams.page || '1')
   
-  let products: unknown[] = []
+  let products: WooCommerceProduct[] = []
   let total = 0
   let totalPages = 0
+  let searchError = false
   
   if (query) {
-    const result = await searchProducts(query, page, 12)
-    products = result.products
-    total = result.total
-    totalPages = result.total_pages
+    try {
+      const result = await searchProducts(query, page, 12)
+      products = result.products
+      total = result.total
+      totalPages = result.total_pages
+    } catch (error) {
+      console.error('Search page data error:', error)
+      searchError = true
+    }
   }
 
   return (
@@ -68,14 +76,21 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       {/* Results */}
       {query ? (
         <>
-          {products.length > 0 ? (
+          {searchError ? (
+            <div className="rounded-2xl border border-border bg-card p-12 text-center">
+              <h2 className="mb-2 text-xl font-semibold">Search is temporarily unavailable</h2>
+              <p className="text-muted-foreground">
+                Please try again shortly or contact support on WhatsApp.
+              </p>
+            </div>
+          ) : products.length > 0 ? (
             <>
               <p className="mb-6 text-sm text-muted-foreground">
                 Found {total} results
               </p>
               
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                {products.map((product: any) => (
+                {products.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
@@ -95,7 +110,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               <Search className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
               <h2 className="mb-2 text-xl font-semibold">No results found</h2>
               <p className="text-muted-foreground">
-                We couldn't find any products matching "{query}". Try a different search term.
+                We couldn&apos;t find any products matching &quot;{query}&quot;. Try a
+                different search term.
               </p>
             </div>
           )}

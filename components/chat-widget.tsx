@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { MessageCircle, X, Send, Phone, HelpCircle } from 'lucide-react'
+import { MessageCircle, X, Send, Phone } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Message {

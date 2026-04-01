@@ -60,8 +60,7 @@ export function shouldBypassCache(request: NextRequest): {
 
 export function buildCacheKey(request: NextRequest): string {
   const url = new URL(request.url)
-  // Include query params in cache key for search/filter results
-  return `${url.pathname}${url.search}`
+  return url.toString()
 }
 
 export async function getCachedResponse(

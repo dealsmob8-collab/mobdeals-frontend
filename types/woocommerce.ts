@@ -209,6 +209,7 @@ export interface CartItem {
   name?: string
   price?: number
   image?: string
+  slug?: string
 }
 
 export interface Cart {
@@ -225,6 +226,8 @@ export interface ProductSearchResult {
 
 export interface WebhookPayload {
   id: number
+  slug?: string
+  name?: string
   parent_id?: number
   status?: string
   number?: string
@@ -237,6 +240,7 @@ export interface WebhookPayload {
   shipping?: WooCommerceAddress
   payment_method?: string
   payment_method_title?: string
+  categories?: WooCommerceCategory[]
   line_items?: WooCommerceLineItem[]
   meta_data?: WooCommerceMetaData[]
 }

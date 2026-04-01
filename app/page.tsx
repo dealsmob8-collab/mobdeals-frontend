@@ -1,16 +1,28 @@
 import Link from 'next/link'
 import { ArrowRight, Truck, Shield, Headphones, CreditCard } from 'lucide-react'
 import { getProducts, getCategories } from '@/lib/woocommerce'
-import { formatPrice } from '@/lib/utils'
 import { ProductCard } from '@/components/product-card'
+import { WooCommerceCategory, WooCommerceProduct } from '@/types/woocommerce'
 
 export const revalidate = 60
 
 export default async function HomePage() {
-  const [{ products: featuredProducts }, { categories }] = await Promise.all([
-    getProducts(undefined, 1, 8, 'popularity'),
-    getCategories().then(cats => ({ categories: cats.slice(0, 6) })),
-  ])
+  let featuredProducts: WooCommerceProduct[] = []
+  let categories: WooCommerceCategory[] = []
+  let dataUnavailable = false
+
+  try {
+    const [featuredResult, fetchedCategories] = await Promise.all([
+      getProducts(undefined, 1, 8, 'popularity'),
+      getCategories(),
+    ])
+
+    featuredProducts = featuredResult.products
+    categories = fetchedCategories.slice(0, 6)
+  } catch (error) {
+    console.error('Home page data error:', error)
+    dataUnavailable = true
+  }
 
   return (
     <div className="flex flex-col">
@@ -29,7 +41,7 @@ export default async function HomePage() {
               </div>
               
               <h1 className="text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">
-                Kenya's Premier{' '}
+                Kenya&apos;s Premier{' '}
                 <span className="text-mobdeals-red">Tech Store</span>
               </h1>
               
@@ -84,6 +96,12 @@ export default async function HomePage() {
       {/* Features */}
       <section className="border-y border-border bg-muted/30 py-12">
         <div className="container mx-auto px-4">
+          {dataUnavailable && (
+            <div className="mb-6 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+              Live catalog data is temporarily unavailable. You can still browse
+              the storefront and contact support on WhatsApp.
+            </div>
+          )}
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { icon: Truck, title: '2-Hour Delivery', desc: 'In Nairobi' },
@@ -158,11 +176,18 @@ export default async function HomePage() {
             </Link>
           </div>
           
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {featuredProducts.length > 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {featuredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
+              Featured products will appear here once the WooCommerce catalog is
+              reachable.
+            </div>
+          )}
         </div>
       </section>
 
