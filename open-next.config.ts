@@ -1,9 +1,11 @@
+import kvCache from '@opennextjs/cloudflare/kvCache'
+
 const config = {
   default: {
     override: {
       wrapper: 'cloudflare-node',
       converter: 'edge',
-      incrementalCache: 'dummy',
+      incrementalCache: async () => kvCache,
       tagCache: 'dummy',
       queue: 'dummy',
     },

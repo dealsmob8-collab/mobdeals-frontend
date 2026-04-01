@@ -12,6 +12,16 @@ export const metadata: Metadata = {
   creator: 'MobDeals',
   publisher: 'MobDeals',
   robots: 'index, follow',
+  icons: {
+    icon: [
+      {
+        url: '/brand/mobdeals-logo.svg',
+        type: 'image/svg+xml',
+      },
+    ],
+    shortcut: '/brand/mobdeals-logo.svg',
+    apple: '/brand/mobdeals-logo.svg',
+  },
   alternates: {
     canonical: 'https://shop.mobdeals.co.ke',
   },

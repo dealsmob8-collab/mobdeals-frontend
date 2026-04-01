@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Search, Menu, X, Phone } from 'lucide-react'
 import { CartIndicator } from '@/components/cart-indicator'
@@ -22,8 +23,15 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-xl font-bold text-mobdeals-red">MobDeals</span>
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/brand/mobdeals-logo.svg"
+              alt="MobDeals"
+              width={180}
+              height={48}
+              priority
+              className="h-10 w-auto max-w-[180px] object-contain"
+            />
           </Link>
 
           {/* Desktop Search */}

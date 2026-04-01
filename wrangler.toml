@@ -17,6 +17,10 @@ id = "27f1def42eff4279942272bc35d823b3"
 binding = "MOBDEALS_CART_KV"
 id = "0e4729a0ee454be091d749e7ac91bb52"
 
+[[kv_namespaces]]
+binding = "NEXT_CACHE_WORKERS_KV"
+id = "c72ba1a2899444bc89cfe97751dfb920"
+
 # Environment variables (non-sensitive)
 [vars]
 SITE_URL = "https://mobdeals.co.ke"
@@ -25,8 +29,6 @@ WP_BASE_URL = "https://origin.mobdeals.co.ke"
 WP_JSON_BASE = "https://origin.mobdeals.co.ke/wp-json"
 
 # Secrets (set via wrangler secret put or dashboard)
-# WC_CONSUMER_KEY = ""
-# WC_CONSUMER_SECRET = ""
 # WC_WEBHOOK_SECRET = ""
 
 # Routes - bind to shop.mobdeals.co.ke

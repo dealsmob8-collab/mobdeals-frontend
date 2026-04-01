@@ -22,12 +22,17 @@ This runbook reflects the current code and Cloudflare configuration in this repo
 
 ### KV Namespaces
 - `WEBHOOK_REPLAY_KV`
-  - ID in `wrangler.toml`: `mobdeals_webhook_replay_kv`
+  - ID in `wrangler.toml`: `27f1def42eff4279942272bc35d823b3`
   - Purpose: webhook replay protection
 
 - `MOBDEALS_CART_KV`
-  - ID in `wrangler.toml`: `mobdeals_cart_kv`
+  - ID in `wrangler.toml`: `0e4729a0ee454be091d749e7ac91bb52`
   - Purpose: cart persistence
+
+- `NEXT_CACHE_WORKERS_KV`
+  - Purpose: persistent OpenNext incremental cache for public catalog pages
+  - ID in `wrangler.toml`: `c72ba1a2899444bc89cfe97751dfb920`
+  - Status: provisioned and bound for production
 
 ### Non-Secret Vars
 
@@ -40,13 +45,13 @@ These are already modeled in [`wrangler.toml`](/home/paulaflare/Desktop/Kimi_Age
 
 ### Secrets
 
-Set these before the first real deploy:
+Set this before enabling WooCommerce webhooks:
 
 ```bash
-wrangler secret put WC_CONSUMER_KEY
-wrangler secret put WC_CONSUMER_SECRET
 wrangler secret put WC_WEBHOOK_SECRET
 ```
+
+The public storefront catalog now reads from the WooCommerce Store API and does not require `WC_CONSUMER_KEY` or `WC_CONSUMER_SECRET`.
 
 ## Local Workflow
 
@@ -81,6 +86,8 @@ npm run cf:build
 
 - `.open-next/worker.js`
 - `.open-next/assets`
+
+`NEXT_CACHE_WORKERS_KV` is now provisioned for persistent `revalidate` cache storage on Cloudflare Workers.
 
 ## Deploy
 
@@ -129,4 +136,5 @@ These items are still Cloudflare-dashboard concerns rather than code-managed set
   - `/api/webhooks/woocommerce`
 - Cart state is KV-backed and keyed by `mobdeals_session` when available, otherwise by `cf-connecting-ip`.
 - Webhook replay protection depends on `WEBHOOK_REPLAY_KV`; deploys without that binding will break webhook safety.
+- Public catalog page revalidation depends on `NEXT_CACHE_WORKERS_KV` for persistent cross-instance cache writes. Without it, OpenNext falls back to asset reads and best-effort runtime behavior instead of durable incremental cache storage.
 - This repo does not currently include a scripted rollback flow. If rollback is needed, use Cloudflare’s deployment/version controls or redeploy the last known good build.

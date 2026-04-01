@@ -27,10 +27,11 @@ This repo is a Next.js 14 App Router storefront deployed to Cloudflare Workers w
 ## Shared Rules
 
 - Prefer the code over the README when they disagree. Current code exposes `/api/products/[slug]` and a single `/api/cart` route; the README documents some routes that do not exist.
-- Keep sensitive values server-side only: `WC_CONSUMER_KEY`, `WC_CONSUMER_SECRET`, and `WC_WEBHOOK_SECRET`.
+- Keep sensitive values server-side only. The current repo requires `WC_WEBHOOK_SECRET`; if admin WooCommerce credentials are reintroduced later, keep them server-side too.
 - Preserve Cloudflare bindings:
   - `WEBHOOK_REPLAY_KV` for webhook replay protection
   - `MOBDEALS_CART_KV` for cart storage
+  - `NEXT_CACHE_WORKERS_KV` for persistent OpenNext incremental cache
   - `ASSETS` for static asset delivery
 - Do not remove or weaken cache bypasses for cart, webhook, checkout/account-style flows, or authenticated/session requests.
 - For cross-cutting changes, run the smallest relevant verification set:

@@ -48,14 +48,13 @@ A production-ready, mobile-first, high-converting tech e-commerce storefront for
 
 ## Environment Variables
 
-Set these secrets via Wrangler or Cloudflare Dashboard:
+Set this secret via Wrangler or the Cloudflare Dashboard:
 
 ```bash
-# WooCommerce API credentials (server-side only)
-WC_CONSUMER_KEY=ck_live_xxx
-WC_CONSUMER_SECRET=cs_live_xxx
 WC_WEBHOOK_SECRET=whsec_xxx
 ```
+
+The public storefront catalog reads from the WooCommerce Store API and does not require consumer key/secret credentials.
 
 ## Development
 
@@ -83,15 +82,15 @@ npm run smoke:prod
 
 ### Public GET (Cached)
 - `GET /api/products?category=&page=&per_page=&sort=` - List products
-- `GET /api/product/[slug]` - Single product
+- `GET /api/products/[slug]` - Single product
 - `GET /api/categories` - Product categories
 - `GET /api/search?q=` - Search products
 
 ### Private (Never Cached)
-- `POST /api/cart/add` - Add to cart
-- `POST /api/cart/update` - Update cart
-- `POST /api/cart/remove` - Remove from cart
-- `POST /api/checkout` - Process checkout
+- `GET /api/cart` - Read cart
+- `POST /api/cart` - Add to cart
+- `PUT /api/cart` - Update cart quantities
+- `DELETE /api/cart` - Clear cart
 
 ### Webhooks
 - `POST /api/webhooks/woocommerce` - WooCommerce webhooks
@@ -111,7 +110,8 @@ Cache status header: `X-MobDeals-Cache: HIT|MISS|BYPASS (reason)`
 
 ## Security
 
-- WooCommerce credentials server-side only
+- WooCommerce webhook secret server-side only
+- Public catalog served from the WooCommerce Store API
 - Webhook signature verification with constant-time comparison
 - Replay attack protection via KV namespace
 - HTML sanitization for product descriptions
@@ -138,7 +138,10 @@ Cache status header: `X-MobDeals-Cache: HIT|MISS|BYPASS (reason)`
 
 ### Prerequisites
 - Cloudflare account (Free plan)
-- KV namespace created: `mobdeals_webhook_replay_kv`
+- KV namespaces created:
+  - `WEBHOOK_REPLAY_KV`
+  - `MOBDEALS_CART_KV`
+  - `NEXT_CACHE_WORKERS_KV`
 - Domain configured: `shop.mobdeals.co.ke`
 - Redirect rules:
   - `mobdeals.co.ke/*` → `https://shop.mobdeals.co.ke/$1` (301)
@@ -148,8 +151,6 @@ Cache status header: `X-MobDeals-Cache: HIT|MISS|BYPASS (reason)`
 
 ```bash
 # Set secrets
-wrangler secret put WC_CONSUMER_KEY
-wrangler secret put WC_CONSUMER_SECRET
 wrangler secret put WC_WEBHOOK_SECRET
 
 # Deploy
