@@ -1,3 +1,4 @@
+import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextRequest, NextResponse } from 'next/server'
 import {
   verifyWebhookSignature,
@@ -8,9 +9,8 @@ import {
 } from '@/lib/webhook'
 import { addCacheHeaders } from '@/lib/cache'
 
-// Get KV namespace from environment
-declare global {
-  var WEBHOOK_REPLAY_KV: KVNamespace
+interface WebhookEnv {
+  WEBHOOK_REPLAY_KV: KVNamespace
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -47,7 +47,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Check replay protection
     const idempotencyKey = getWebhookIdempotencyKey(rawBody, topic)
-    const isReplay = await checkReplayProtection(idempotencyKey, WEBHOOK_REPLAY_KV)
+    const { env } = await getCloudflareContext()
+    const replayKv = (env as WebhookEnv).WEBHOOK_REPLAY_KV
+    const isReplay = await checkReplayProtection(idempotencyKey, replayKv)
     if (isReplay) {
       console.warn('Duplicate webhook detected:', idempotencyKey)
       const response = NextResponse.json(

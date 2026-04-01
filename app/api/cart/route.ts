@@ -1,3 +1,4 @@
+import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextRequest, NextResponse } from 'next/server'
 import { addCacheHeaders } from '@/lib/cache'
 import { getProductById } from '@/lib/woocommerce'
@@ -32,9 +33,8 @@ interface StoredCart {
   item_count: number
 }
 
-// Get KV namespace from environment
-declare global {
-  var MOBDEALS_CART_KV: KVNamespace
+interface CartEnv {
+  MOBDEALS_CART_KV: KVNamespace
 }
 
 function getSessionState(request: NextRequest): {
@@ -57,8 +57,14 @@ function createEmptyStoredCart(): StoredCart {
   return { items: [], total: 0, item_count: 0 }
 }
 
+async function getCartKv(): Promise<KVNamespace> {
+  const { env } = await getCloudflareContext()
+  return (env as CartEnv).MOBDEALS_CART_KV
+}
+
 async function readStoredCart(cartKey: string): Promise<StoredCart> {
-  const cartData = await MOBDEALS_CART_KV.get(cartKey)
+  const cartKv = await getCartKv()
+  const cartData = await cartKv.get(cartKey)
   if (!cartData) return createEmptyStoredCart()
 
   try {
@@ -201,7 +207,8 @@ async function handleAddToCart(request: NextRequest): Promise<NextResponse> {
     }
 
     const normalizedCart = normalizeStoredCart(cart)
-    await MOBDEALS_CART_KV.put(cartKey, JSON.stringify(normalizedCart))
+    const cartKv = await getCartKv()
+    await cartKv.put(cartKey, JSON.stringify(normalizedCart))
 
     return withSessionCookie(
       NextResponse.json(await hydrateCart(normalizedCart), { status: 200 }),
@@ -248,7 +255,8 @@ async function handleUpdateCart(request: NextRequest): Promise<NextResponse> {
     }
 
     const normalizedCart = normalizeStoredCart(cart)
-    await MOBDEALS_CART_KV.put(cartKey, JSON.stringify(normalizedCart))
+    const cartKv = await getCartKv()
+    await cartKv.put(cartKey, JSON.stringify(normalizedCart))
 
     return withSessionCookie(
       NextResponse.json(await hydrateCart(normalizedCart), { status: 200 }),
@@ -275,7 +283,8 @@ async function handleClearCart(request: NextRequest): Promise<NextResponse> {
   try {
     const sessionState = getSessionState(request)
     const cartKey = getCartKey(sessionState.sessionId)
-    await MOBDEALS_CART_KV.delete(cartKey)
+    const cartKv = await getCartKv()
+    await cartKv.delete(cartKey)
 
     return withSessionCookie(
       NextResponse.json(

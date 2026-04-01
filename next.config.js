@@ -16,36 +16,6 @@ const nextConfig = {
       },
     ],
   },
-  async redirects() {
-    return [
-      // Root domain redirects handled at Cloudflare level
-      // These are fallback redirects for local dev
-      {
-        source: '/',
-        has: [
-          {
-            type: 'header',
-            key: 'host',
-            value: 'mobdeals.co.ke',
-          },
-        ],
-        destination: 'https://shop.mobdeals.co.ke/',
-        permanent: true,
-      },
-      {
-        source: '/',
-        has: [
-          {
-            type: 'header',
-            key: 'host',
-            value: 'www.mobdeals.co.ke',
-          },
-        ],
-        destination: 'https://shop.mobdeals.co.ke/',
-        permanent: true,
-      },
-    ];
-  },
   async headers() {
     return [
       {
