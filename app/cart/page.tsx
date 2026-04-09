@@ -1,8 +1,10 @@
 import Link from 'next/link'
 import { CartPageClient } from '@/components/cart-page-client'
+import { SITE_DESCRIPTION } from '@/lib/site'
 
 export const metadata = {
   title: 'Cart | MobDeals Kenya',
+  description: SITE_DESCRIPTION,
 }
 
 export default function CartPage() {

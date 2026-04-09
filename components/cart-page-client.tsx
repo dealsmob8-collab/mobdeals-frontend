@@ -4,6 +4,11 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/utils'
 import { Cart } from '@/types/woocommerce'
+import {
+  buildCartWhatsAppMessage,
+  buildWhatsAppUrl,
+  DEFAULT_WHATSAPP_MESSAGE,
+} from '@/lib/site'
 
 const EMPTY_CART: Cart = {
   items: [],
@@ -114,15 +119,27 @@ export function CartPageClient() {
         <p className="text-muted-foreground">
           Add a few products and they will appear here.
         </p>
-        <Link
-          href="/products"
-          className="mt-4 inline-flex rounded-full bg-mobdeals-red px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-red-700"
-        >
-          Continue shopping
-        </Link>
+        <div className="mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link
+            href="/products"
+            className="inline-flex rounded-full bg-mobdeals-red px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-mobdeals-orangeDark"
+          >
+            Continue shopping
+          </Link>
+          <a
+            href={buildWhatsAppUrl(DEFAULT_WHATSAPP_MESSAGE)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex rounded-full border border-border px-5 py-3 text-sm font-medium transition-colors hover:bg-secondary"
+          >
+            Ask on WhatsApp
+          </a>
+        </div>
       </div>
     )
   }
+
+  const whatsappHref = buildWhatsAppUrl(buildCartWhatsAppMessage(cart))
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -224,12 +241,12 @@ export function CartPageClient() {
         </p>
 
         <a
-          href="https://wa.me/254700000000?text=Hi%20MobDeals%2C%20I%20want%20to%20complete%20my%20order"
+          href={whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-green-600 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-green-700"
+          className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-mobdeals-cyanDark px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-mobdeals-teal"
         >
-          Checkout on WhatsApp
+          Confirm order on WhatsApp
         </a>
 
         <button

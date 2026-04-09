@@ -2,16 +2,17 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { cn } from '@/lib/utils'
+import { STORE_LOCATION } from '@/lib/site'
 
 const MESSAGES = [
   {
     id: 'delivery',
-    text: '2-hour delivery in Nairobi | M-PESA | Cash on Delivery.',
+    text: 'WhatsApp ordering, Nairobi support, and M-PESA-friendly checkout.',
     icon: '🚚',
   },
   {
     id: 'location',
-    text: '📍 Moi Avenue, Tembo House Cooperative.',
+    text: `📍 ${STORE_LOCATION}.`,
     icon: null,
   },
 ]
@@ -66,12 +67,12 @@ export function AnnouncementStrip() {
       <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/20">
         <div
           className={cn(
-            'h-full bg-white/60 transition-all',
+            'h-full origin-left bg-white/60',
             isPaused ? 'animate-none' : 'animate-progress'
           )}
           style={{
             animationDuration: `${ROTATION_INTERVAL}ms`,
-            width: isPaused ? `${(currentIndex / MESSAGES.length) * 100}%` : '100%',
+            animationPlayState: isPaused ? 'paused' : 'running',
           }}
         />
       </div>

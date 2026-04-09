@@ -81,7 +81,7 @@ export function AddToCartButton({
         onClick={handleAddToCart}
         disabled={disabled || isSubmitting}
         className={cn(
-          'flex-1 rounded-full bg-mobdeals-red px-8 py-4 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50',
+          'flex-1 rounded-full bg-mobdeals-red px-8 py-4 text-sm font-medium text-white transition-colors hover:bg-mobdeals-orangeDark disabled:cursor-not-allowed disabled:opacity-50',
           className
         )}
       >
@@ -99,7 +99,7 @@ export function AddToCartButton({
       onClick={handleAddToCart}
       disabled={disabled || isSubmitting}
       className={cn(
-        'flex h-10 w-10 items-center justify-center rounded-full bg-mobdeals-red text-white transition-colors hover:bg-red-700 disabled:opacity-50',
+        'flex h-10 w-10 items-center justify-center rounded-full bg-mobdeals-red text-white transition-colors hover:bg-mobdeals-orangeDark disabled:opacity-50',
         className
       )}
       aria-label={isAdded ? 'Added to cart' : 'Add to cart'}

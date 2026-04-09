@@ -3,6 +3,12 @@
 import { useState, useRef, useEffect } from 'react'
 import { MessageCircle, X, Send, Phone } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import {
+  buildWhatsAppUrl,
+  DEFAULT_WHATSAPP_MESSAGE,
+  STORE_LOCATION,
+  WHATSAPP_DISPLAY,
+} from '@/lib/site'
 
 interface Message {
   id: string
@@ -12,53 +18,24 @@ interface Message {
 }
 
 const FAQ_RESPONSES: Record<string, string> = {
-  shipping: `🚚 **Shipping Information:**
-• **Nairobi**: 2-hour delivery
-• **Nationwide**: Next-day dispatch
-• **Free shipping** on orders over KES 5,000`,
-  
-  payment: `💳 **Payment Options:**
-• **M-PESA** (recommended)
-• **Cash on Delivery** (Nairobi only)
-• **Bank Transfer**
-
-All payments are secure and encrypted.`,
-  
-  returns: `🔄 **Returns & Refunds:**
-• **7-day** return policy
-• Items must be in original condition
-• Contact us to initiate a return
-• Refunds processed within 5 business days`,
-  
-  warranty: `🛡️ **Warranty:**
-• All products come with **manufacturer warranty**
-• Phones: 1-2 years depending on brand
-• Accessories: 6-12 months
-• We handle all warranty claims`,
-  
-  contact: `📞 **Contact Us:**
-• **WhatsApp**: +254 700 000 000
-• **Phone**: +254 700 000 000
-• **Email**: support@mobdeals.co.ke
-• **Visit**: Moi Avenue, Tembo House Cooperative`,
-  
-  discount: `🎁 **Get 5% Off!**
-Enter your phone number and we'll send you a discount code via SMS.`,
+  stock: 'Send the product name and we will confirm stock, condition, and price.',
+  price: 'Message us with the item name and we will confirm the latest price.',
+  delivery: 'Nairobi delivery can be arranged after stock confirmation. Ask us for the fastest option.',
+  payment: 'We support M-PESA. Ask us to confirm payment options for this item.',
+  warranty: 'Warranty depends on the item. We will confirm what applies before you order.',
+  contact: `WhatsApp ${WHATSAPP_DISPLAY} or visit ${STORE_LOCATION}.`,
 }
 
 const INITIAL_MESSAGE: Message = {
   id: 'welcome',
   type: 'bot',
-  text: `👋 **Welcome to MobDeals!**
-
-How can I help you today?`,
+  text: 'Hi. Ask about stock, price, delivery, or warranty.',
   options: [
-    { label: '🚚 Shipping', value: 'shipping' },
-    { label: '💳 Payment', value: 'payment' },
-    { label: '🔄 Returns', value: 'returns' },
-    { label: '🛡️ Warranty', value: 'warranty' },
-    { label: '📞 Contact', value: 'contact' },
-    { label: '🎁 Get Discount', value: 'discount' },
+    { label: 'Stock', value: 'stock' },
+    { label: 'Price', value: 'price' },
+    { label: 'Delivery', value: 'delivery' },
+    { label: 'Warranty', value: 'warranty' },
+    { label: 'Contact', value: 'contact' },
   ],
 }
 
@@ -67,7 +44,6 @@ export function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE])
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
-  const [showLeadCapture, setShowLeadCapture] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -79,7 +55,6 @@ export function ChatWidget() {
   }, [messages])
 
   const handleOptionClick = (value: string) => {
-    // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
@@ -88,56 +63,49 @@ export function ChatWidget() {
     setMessages((prev) => [...prev, userMessage])
     setIsTyping(true)
 
-    // Simulate bot response
     setTimeout(() => {
       setIsTyping(false)
-      
-      if (value === 'discount') {
-        setShowLeadCapture(true)
-      }
 
-      const response = FAQ_RESPONSES[value] || `I'm not sure about that. Would you like to speak with a human agent on WhatsApp?`
-      
+      const response = FAQ_RESPONSES[value] || 'Open WhatsApp and we will help with stock, price, and delivery.'
+
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'bot',
         text: response,
-        options: value === 'discount' ? undefined : [
-          { label: 'Speak to Human', value: 'human' },
-          { label: 'More Questions', value: 'more' },
-        ],
+        options:
+          value === 'contact'
+            ? undefined
+            : [
+                { label: 'Stock', value: 'stock' },
+                { label: 'WhatsApp', value: 'human' },
+              ],
       }
       setMessages((prev) => [...prev, botMessage])
     }, 800)
+  }
+
+  const handleTextQuestion = (value: string) => {
+    const normalized = value.toLowerCase()
+
+    if (normalized.includes('stock')) return 'stock'
+    if (normalized.includes('price') || normalized.includes('cost')) return 'price'
+    if (normalized.includes('delivery') || normalized.includes('ship')) return 'delivery'
+    if (normalized.includes('warranty')) return 'warranty'
+    if (normalized.includes('contact') || normalized.includes('phone') || normalized.includes('number')) return 'contact'
+
+    return 'stock'
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!inputValue.trim()) return
 
-    handleOptionClick(inputValue.toLowerCase())
+    handleOptionClick(handleTextQuestion(inputValue))
     setInputValue('')
   }
 
-  const handleLeadSubmit = (phone: string) => {
-    // Store phone with consent (in production, save to database)
-    console.log('Lead captured:', phone)
-    
-    const botMessage: Message = {
-      id: Date.now().toString(),
-      type: 'bot',
-      text: `✅ Thank you! We've sent a 5% discount code to **${phone}**. Check your SMS!`,
-      options: [
-        { label: 'More Questions', value: 'more' },
-        { label: 'Speak to Human', value: 'human' },
-      ],
-    }
-    setMessages((prev) => [...prev, botMessage])
-    setShowLeadCapture(false)
-  }
-
   const openWhatsApp = () => {
-    window.open('https://wa.me/254700000000?text=Hi%20MobDeals%2C%20I%20need%20assistance', '_blank')
+    window.open(buildWhatsAppUrl(DEFAULT_WHATSAPP_MESSAGE), '_blank')
   }
 
   return (
@@ -169,12 +137,12 @@ export function ChatWidget() {
               </div>
               <div>
                 <h3 className="font-semibold text-white">MobDeals Support</h3>
-                <p className="text-xs text-white/80">Typically replies instantly</p>
+                <p className="text-xs text-white/80">Stock, price, and delivery help</p>
               </div>
             </div>
             <button
               onClick={openWhatsApp}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500 transition-colors hover:bg-green-600"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-mobdeals-cyanDark transition-colors hover:bg-mobdeals-teal"
               title="Chat on WhatsApp"
             >
               <Phone className="h-5 w-5 text-white" />
@@ -229,40 +197,7 @@ export function ChatWidget() {
                 </div>
               </div>
             )}
-            
-            {/* Lead Capture Form */}
-            {showLeadCapture && (
-              <div className="rounded-xl bg-secondary p-4">
-                <p className="mb-3 text-sm">Enter your phone number:</p>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    const phone = (e.target as HTMLFormElement).phone.value
-                    if (phone) handleLeadSubmit(phone)
-                  }}
-                >
-                  <input
-                    type="tel"
-                    name="phone"
-                    placeholder="e.g., 0700000000"
-                    pattern="0[0-9]{9}"
-                    required
-                    className="mb-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-                  />
-                  <label className="mb-3 flex items-start gap-2 text-xs text-muted-foreground">
-                    <input type="checkbox" required className="mt-0.5" />
-                    <span>I consent to receive marketing messages</span>
-                  </label>
-                  <button
-                    type="submit"
-                    className="w-full rounded-lg bg-mobdeals-red py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
-                  >
-                    Get Discount Code
-                  </button>
-                </form>
-              </div>
-            )}
-            
+
             <div ref={messagesEndRef} />
           </div>
 
@@ -280,7 +215,7 @@ export function ChatWidget() {
             />
             <button
               type="submit"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-mobdeals-red text-white transition-colors hover:bg-red-700"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-mobdeals-red text-white transition-colors hover:bg-mobdeals-orangeDark"
               aria-label="Send message"
             >
               <Send className="h-4 w-4" />
@@ -290,7 +225,7 @@ export function ChatWidget() {
           {/* Footer */}
           <div className="rounded-b-2xl border-t border-border bg-muted/50 px-4 py-2 text-center">
             <p className="text-xs text-muted-foreground">
-              Powered by MobDeals AI •{' '}
+              Need a faster reply?{' '}
               <button onClick={openWhatsApp} className="text-mobdeals-red hover:underline">
                 Chat on WhatsApp
               </button>

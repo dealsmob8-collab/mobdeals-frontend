@@ -2,9 +2,12 @@ import Link from 'next/link'
 import { ProductCard } from '@/components/product-card'
 import { getProducts } from '@/lib/woocommerce'
 import { WooCommerceProduct } from '@/types/woocommerce'
+import { buildWhatsAppUrl, DEFAULT_WHATSAPP_MESSAGE } from '@/lib/site'
 
 export const metadata = {
   title: 'Deals | MobDeals Kenya',
+  description:
+    'Browse current markdowns and featured deals from the MobDeals catalog. Confirm stock on WhatsApp before checkout.',
 }
 
 export const revalidate = 60
@@ -33,13 +36,21 @@ export default async function DealsPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold md:text-3xl">Latest Deals</h1>
         <p className="text-muted-foreground">
-          Promotions, markdowns, and hot offers from the current catalog.
+          Promotions, markdowns, and current offers from the MobDeals catalog.
         </p>
       </div>
 
       {dataUnavailable ? (
         <div className="rounded-2xl border border-border bg-card p-12 text-center text-muted-foreground">
-          Deal data is temporarily unavailable.
+          <p>Deal data is temporarily unavailable.</p>
+          <a
+            href={buildWhatsAppUrl(DEFAULT_WHATSAPP_MESSAGE)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex rounded-full border border-border px-5 py-3 text-sm font-medium transition-colors hover:bg-secondary"
+          >
+            Ask on WhatsApp
+          </a>
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

@@ -3,11 +3,17 @@ import './globals.css'
 import { AnnouncementStrip } from '@/components/announcement-strip'
 import { Header } from '@/components/header'
 import { ChatWidget } from '@/components/chat-widget'
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site'
 
 export const metadata: Metadata = {
-  title: 'MobDeals - Kenya\'s Premier Tech Store | 2-Hour Nairobi Delivery',
-  description: 'Shop the latest smartphones, laptops, and tech accessories in Kenya. 2-hour delivery in Nairobi, M-PESA payments, next-day nationwide dispatch. Visit our store at Moi Avenue, Tembo House Cooperative.',
-  keywords: 'Kenya, Nairobi, smartphones, laptops, tech, M-PESA, mobile phones, electronics, online shopping',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} | Phones, laptops, and tech deals in Nairobi`,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  keywords:
+    'phones, laptops, accessories, Nairobi, Kenya, WhatsApp shopping, M-PESA, electronics',
   authors: [{ name: 'MobDeals' }],
   creator: 'MobDeals',
   publisher: 'MobDeals',
@@ -15,31 +21,37 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: '/brand/mobdeals-logo.svg',
-        type: 'image/svg+xml',
+        url: '/brand/mobdeals-logo.png',
+        type: 'image/png',
       },
     ],
-    shortcut: '/brand/mobdeals-logo.svg',
-    apple: '/brand/mobdeals-logo.svg',
+    shortcut: '/brand/mobdeals-logo.png',
+    apple: '/brand/mobdeals-logo.png',
   },
   alternates: {
-    canonical: 'https://shop.mobdeals.co.ke',
+    canonical: '/',
   },
   openGraph: {
-    title: 'MobDeals - Kenya\'s Premier Tech Store',
-    description: '2-hour delivery in Nairobi | M-PESA | Cash on Delivery',
-    url: 'https://shop.mobdeals.co.ke',
-    siteName: 'MobDeals',
+    title: `${SITE_NAME} | Phones, laptops, and tech deals in Nairobi`,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    siteName: SITE_NAME,
     locale: 'en_KE',
     type: 'website',
+    images: [
+      {
+        url: '/home/hero-desktop.png',
+        width: 1920,
+        height: 1080,
+        alt: SITE_NAME,
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MobDeals - Kenya\'s Premier Tech Store',
-    description: '2-hour delivery in Nairobi | M-PESA | Cash on Delivery',
-  },
-  verification: {
-    google: 'your-google-verification-code',
+    title: `${SITE_NAME} | Phones, laptops, and tech deals in Nairobi`,
+    description: SITE_DESCRIPTION,
+    images: ['/home/hero-desktop.png'],
   },
 }
 

@@ -6,6 +6,7 @@ import { ProductCard } from '@/components/product-card'
 import { SortSelect } from '@/components/sort-select'
 import { getCategories, getProducts } from '@/lib/woocommerce'
 import { WooCommerceCategory, WooCommerceProduct } from '@/types/woocommerce'
+import { buildWhatsAppUrl, DEFAULT_WHATSAPP_MESSAGE } from '@/lib/site'
 
 export const revalidate = 60
 
@@ -20,8 +21,29 @@ interface CategoryPageProps {
 }
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
-  return {
-    title: `${params.slug} | MobDeals Kenya`,
+  try {
+    const categories = await getCategories()
+    const category = categories.find((entry) => entry.slug === params.slug)
+
+    if (!category) {
+      return {
+        title: `Category | MobDeals Kenya`,
+        description: 'Browse MobDeals product categories and confirm stock on WhatsApp.',
+      }
+    }
+
+    return {
+      title: `${category.name} | MobDeals Kenya`,
+      description: `Browse ${category.name.toLowerCase()} from the MobDeals catalog. Confirm stock, condition, and price on WhatsApp before checkout.`,
+      alternates: {
+        canonical: `/category/${params.slug}`,
+      },
+    }
+  } catch {
+    return {
+      title: `Category | MobDeals Kenya`,
+      description: 'Browse MobDeals product categories and confirm stock on WhatsApp.',
+    }
   }
 }
 
@@ -40,14 +62,12 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     categories = await getCategories()
     category = categories.find((entry) => entry.slug === params.slug) || null
 
-    if (!category) {
-      notFound()
+    if (category) {
+      const productResult = await getProducts(String(category.id), page, 12, sort)
+      products = productResult.products
+      total = productResult.total
+      totalPages = productResult.total_pages
     }
-
-    const productResult = await getProducts(String(category.id), page, 12, sort)
-    products = productResult.products
-    total = productResult.total
-    totalPages = productResult.total_pages
   } catch (error) {
     console.error('Category page data error:', error)
     dataUnavailable = true
@@ -111,6 +131,11 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
               <p className="text-sm text-muted-foreground">
                 Showing {products.length} of {total} products
               </p>
+              {category?.description && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {category.description}
+                </p>
+              )}
             </div>
           </div>
 
@@ -139,6 +164,16 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           ) : (
             <div className="rounded-2xl border border-border bg-card p-12 text-center text-muted-foreground">
               No products found in this category yet.
+              <div className="mt-4">
+                <a
+                  href={buildWhatsAppUrl(DEFAULT_WHATSAPP_MESSAGE)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex rounded-full border border-border px-5 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                >
+                  Ask on WhatsApp
+                </a>
+              </div>
             </div>
           )}
         </div>

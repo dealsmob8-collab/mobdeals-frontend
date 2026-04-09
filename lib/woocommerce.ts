@@ -1,5 +1,6 @@
 import sanitizeHtmlLib from 'sanitize-html'
 import { WooCommerceProduct, WooCommerceCategory, ProductSearchResult } from '@/types/woocommerce'
+import { validateProductData as validateProductDataFromHelpers } from '@/lib/product-validators'
 
 const WP_JSON_BASE = process.env.WP_JSON_BASE || 'https://origin.mobdeals.co.ke/wp-json'
 const STORE_API_BASE = `${WP_JSON_BASE}/wc/store/v1`
@@ -82,6 +83,12 @@ interface StoreApiAttribute {
   terms?: StoreApiAttributeTerm[]
 }
 
+interface StoreApiMetaData {
+  id?: number
+  key?: string
+  value?: unknown
+}
+
 interface StoreApiProduct {
   id: number
   name: string
@@ -100,6 +107,7 @@ interface StoreApiProduct {
   categories?: StoreApiCategory[]
   tags?: StoreApiTag[]
   attributes?: StoreApiAttribute[]
+  meta_data?: StoreApiMetaData[]
   variations?: number[]
   grouped_products?: number[]
   is_purchasable?: boolean
@@ -260,10 +268,14 @@ function mapStoreProduct(product: StoreApiProduct): WooCommerceProduct {
     images: (product.images || []).map(mapStoreImage),
     attributes: (product.attributes || []).map(mapStoreAttribute),
     default_attributes: [],
+    meta_data: (product.meta_data || []).map((entry) => ({
+      id: Number(entry.id || 0),
+      key: entry.key || '',
+      value: entry.value,
+    })),
     variations: (product.variations || []).map(Number),
     grouped_products: (product.grouped_products || []).map(Number),
     menu_order: 0,
-    meta_data: [],
     _links: {
       self: [{ href: product.permalink }],
       collection: [{ href: `${STORE_API_BASE}/products` }],
@@ -417,39 +429,5 @@ export function validateProductData(product: WooCommerceProduct): {
   valid: boolean
   issues: string[]
 } {
-  const issues: string[] = []
-
-  // Check for title/description mismatch
-  if (product.description && product.description.trim().startsWith(product.name)) {
-    issues.push('Description starts with product name - possible duplication')
-  }
-
-  // Check for empty critical fields
-  if (!product.name || product.name.trim() === '') {
-    issues.push('Product name is empty')
-  }
-
-  if (!product.price && !product.regular_price) {
-    issues.push('Product has no price')
-  }
-
-  // Check for potential data mismatch
-  if (product.description) {
-    const descLower = product.description.toLowerCase()
-    const nameWords = product.name.toLowerCase().split(' ')
-    const unrelatedTerms = ['iphone', 'samsung', 'xiaomi', 'oppo', 'vivo', 'nokia']
-    const productType = nameWords[0]
-
-    for (const term of unrelatedTerms) {
-      if (descLower.includes(term) && !product.name.toLowerCase().includes(term)) {
-        issues.push(`Description mentions '${term}' which is not in product name - potential mismatch`)
-        break
-      }
-    }
-  }
-
-  return {
-    valid: issues.length === 0,
-    issues,
-  }
+  return validateProductDataFromHelpers(product)
 }

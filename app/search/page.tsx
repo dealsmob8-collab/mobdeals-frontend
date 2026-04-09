@@ -5,10 +5,12 @@ import { ProductCard } from '@/components/product-card'
 import { Pagination } from '@/components/pagination'
 import { Search } from 'lucide-react'
 import { WooCommerceProduct } from '@/types/woocommerce'
+import { buildWhatsAppUrl, DEFAULT_WHATSAPP_MESSAGE } from '@/lib/site'
 
 export const metadata: Metadata = {
   title: 'Search | MobDeals Kenya',
-  description: 'Search for smartphones, laptops, and tech accessories at MobDeals Kenya.',
+  description:
+    'Search MobDeals phones, laptops, accessories, and current deals. Confirm stock on WhatsApp if you need a quick answer.',
 }
 export const revalidate = 60
 
@@ -66,7 +68,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <button
             type="submit"
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-mobdeals-red px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-mobdeals-red px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-mobdeals-orangeDark"
           >
             Search
           </button>
@@ -113,6 +115,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 We couldn&apos;t find any products matching &quot;{query}&quot;. Try a
                 different search term.
               </p>
+              <a
+                href={buildWhatsAppUrl(DEFAULT_WHATSAPP_MESSAGE)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex rounded-full border border-border px-5 py-3 text-sm font-medium transition-colors hover:bg-secondary"
+              >
+                Ask on WhatsApp
+              </a>
             </div>
           )}
         </>
@@ -122,6 +132,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <p className="text-muted-foreground">
             Enter a search term above to find products.
           </p>
+          <a
+            href={buildWhatsAppUrl(DEFAULT_WHATSAPP_MESSAGE)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-flex rounded-full border border-border px-5 py-3 text-sm font-medium transition-colors hover:bg-secondary"
+          >
+            Ask on WhatsApp
+          </a>
         </div>
       )}
     </div>

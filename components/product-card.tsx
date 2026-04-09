@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { AddToCartButton } from '@/components/add-to-cart-button'
 import { cn, formatPrice } from '@/lib/utils'
 import { WooCommerceProduct } from '@/types/woocommerce'
+import { getProductCopy } from '@/lib/product-copy'
 
 interface ProductCardProps {
   product: WooCommerceProduct
@@ -10,6 +11,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, className }: ProductCardProps) {
+  const copy = getProductCopy(product)
   const price = parseFloat(product.price || product.regular_price || '0')
   const regularPrice = parseFloat(product.regular_price || '0')
   const isOnSale = product.on_sale && regularPrice > price
@@ -26,7 +28,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
         {product.images && product.images[0] ? (
           <Image
             src={product.images[0].src}
-            alt={product.images[0].alt || product.name}
+            alt={product.images[0].alt || copy.displayTitle}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
@@ -63,12 +65,25 @@ export function ProductCard({ product, className }: ProductCardProps) {
           </span>
         )}
 
+        <div className="mb-2 flex flex-wrap gap-2">
+          <span className="rounded-full border border-border bg-muted/40 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+            {copy.familyLabel}
+          </span>
+          <span className="rounded-full border border-border bg-muted/40 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+            {copy.conditionLabel}
+          </span>
+        </div>
+
         {/* Title */}
         <Link href={`/products/${product.slug}`}>
           <h3 className="mb-2 line-clamp-2 text-sm font-semibold group-hover:text-mobdeals-red transition-colors">
-            {product.name}
+            {copy.displayTitle}
           </h3>
         </Link>
+
+        <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
+          {copy.cardSummary}
+        </p>
 
         {/* Rating */}
         {product.average_rating && parseFloat(product.average_rating) > 0 && (

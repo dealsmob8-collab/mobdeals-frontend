@@ -1,9 +1,12 @@
 import Link from 'next/link'
 import { getCategories } from '@/lib/woocommerce'
 import { WooCommerceCategory } from '@/types/woocommerce'
+import { buildWhatsAppUrl, DEFAULT_WHATSAPP_MESSAGE } from '@/lib/site'
 
 export const metadata = {
   title: 'Categories | MobDeals Kenya',
+  description:
+    'Browse MobDeals product categories, from phones and laptops to accessories and deals.',
 }
 
 export const revalidate = 300
@@ -30,7 +33,7 @@ export default async function CategoriesPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold md:text-3xl">Browse Categories</h1>
         <p className="text-muted-foreground">
-          Explore the main departments in the MobDeals catalog.
+          Explore the main product groups in the MobDeals catalog and confirm stock on WhatsApp.
         </p>
       </div>
 
@@ -39,20 +42,32 @@ export default async function CategoriesPage() {
           Category data is temporarily unavailable.
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((category) => (
-            <Link
-              key={category.id}
-              href={`/category/${category.slug}`}
-              className="rounded-2xl border border-border bg-card p-6 transition-colors hover:border-mobdeals-red"
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {categories.map((category) => (
+              <Link
+                key={category.id}
+                href={`/category/${category.slug}`}
+                className="rounded-2xl border border-border bg-card p-6 transition-colors hover:border-mobdeals-red"
+              >
+                <h2 className="text-lg font-semibold">{category.name}</h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {category.count} products
+                </p>
+              </Link>
+            ))}
+          </div>
+          <div className="mt-8">
+            <a
+              href={buildWhatsAppUrl(DEFAULT_WHATSAPP_MESSAGE)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex rounded-full border border-border px-5 py-3 text-sm font-medium transition-colors hover:bg-secondary"
             >
-              <h2 className="text-lg font-semibold">{category.name}</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {category.count} products
-              </p>
-            </Link>
-          ))}
-        </div>
+              Ask on WhatsApp
+            </a>
+          </div>
+        </>
       )}
     </div>
   )

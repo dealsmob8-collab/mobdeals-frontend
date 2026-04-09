@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Search, Menu, X, Phone } from 'lucide-react'
 import { CartIndicator } from '@/components/cart-indicator'
 import { cn } from '@/lib/utils'
+import { buildWhatsAppUrl, DEFAULT_WHATSAPP_MESSAGE } from '@/lib/site'
 
 const NAV_ITEMS = [
   { label: 'Home', href: '/' },
@@ -25,8 +26,8 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image
-              src="/brand/mobdeals-logo.svg"
-              alt="MobDeals"
+              src="/brand/mobdeals-logo.png"
+              alt="MobDeals Kenya"
               width={180}
               height={48}
               priority
@@ -40,7 +41,7 @@ export function Header() {
               <input
                 type="search"
                 name="q"
-                placeholder="Search products..."
+                placeholder="Search phones, laptops, accessories..."
                 className="w-full rounded-full border border-border bg-secondary px-4 py-2 pl-10 text-sm focus:border-mobdeals-red focus:outline-none focus:ring-1 focus:ring-mobdeals-red"
               />
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -64,13 +65,13 @@ export function Header() {
           <div className="flex items-center gap-4">
             {/* WhatsApp CTA */}
             <a
-              href="https://wa.me/254700000000"
+              href={buildWhatsAppUrl(DEFAULT_WHATSAPP_MESSAGE)}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden items-center gap-2 rounded-full bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 lg:flex"
+              className="hidden items-center gap-2 rounded-full bg-mobdeals-cyanDark px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-mobdeals-teal lg:flex"
             >
               <Phone className="h-4 w-4" />
-              <span>Order on WhatsApp</span>
+              <span>Ask on WhatsApp</span>
             </a>
 
             <CartIndicator />
@@ -96,7 +97,7 @@ export function Header() {
             <input
               type="search"
               name="q"
-              placeholder="Search products..."
+              placeholder="Search phones, laptops, accessories..."
               className="w-full rounded-full border border-border bg-secondary px-4 py-2 pl-10 text-sm focus:border-mobdeals-red focus:outline-none focus:ring-1 focus:ring-mobdeals-red"
             />
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -126,13 +127,13 @@ export function Header() {
             ))}
             <li className="pt-4">
               <a
-                href="https://wa.me/254700000000"
+                href={buildWhatsAppUrl(DEFAULT_WHATSAPP_MESSAGE)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 rounded-full bg-green-600 px-4 py-3 text-sm font-medium text-white"
+                className="flex items-center justify-center gap-2 rounded-full bg-mobdeals-cyanDark px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-mobdeals-teal"
               >
                 <Phone className="h-4 w-4" />
-                <span>Order on WhatsApp</span>
+                <span>Ask on WhatsApp</span>
               </a>
             </li>
           </ul>

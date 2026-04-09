@@ -5,10 +5,12 @@ import { ProductCard } from '@/components/product-card'
 import { Pagination } from '@/components/pagination'
 import { SortSelect } from '@/components/sort-select'
 import { WooCommerceCategory, WooCommerceProduct } from '@/types/woocommerce'
+import { buildWhatsAppUrl, DEFAULT_WHATSAPP_MESSAGE } from '@/lib/site'
 
 export const metadata: Metadata = {
-  title: 'All Products | MobDeals Kenya',
-  description: 'Browse our complete collection of smartphones, laptops, and tech accessories. 2-hour delivery in Nairobi, M-PESA payments.',
+  title: 'Browse products | MobDeals Kenya',
+  description:
+    'Browse tested phones, laptops, accessories, and current deals from the MobDeals catalog. Confirm stock on WhatsApp before checkout.',
 }
 export const revalidate = 60
 
@@ -108,11 +110,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         {/* Products Grid */}
         <div className="lg:col-span-3">
           <div className="mb-6 flex items-center justify-between">
-            <h1 className="text-2xl font-bold">
-              {category
-                ? categories.find((c) => String(c.id) === category)?.name || 'Products'
-                : 'All Products'}
-            </h1>
+            <div>
+              <h1 className="text-2xl font-bold">Browse products</h1>
+              <p className="text-sm text-muted-foreground">
+                Tested devices, clear condition notes, and quick WhatsApp support.
+              </p>
+            </div>
             <span className="text-sm text-muted-foreground">
               Showing {products.length} of {total} products
             </span>
@@ -152,6 +155,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               >
                 View all products
               </Link>
+              <a
+                href={buildWhatsAppUrl(DEFAULT_WHATSAPP_MESSAGE)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex rounded-full border border-border px-5 py-3 text-sm font-medium transition-colors hover:bg-secondary"
+              >
+                Ask on WhatsApp
+              </a>
             </div>
           )}
         </div>
