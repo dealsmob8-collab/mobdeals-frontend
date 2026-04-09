@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "cf:build": "opennextjs-cloudflare",
+    "cf:build": "node scripts/cf-build.mjs",
     "cf:deploy": "wrangler deploy",
     "cf:dev": "wrangler dev",
     "smoke:prod": "bash scripts/smoke-test.sh",
